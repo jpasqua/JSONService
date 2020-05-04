@@ -1,3 +1,8 @@
+/*
+ * JSONService: Utilities for POSTing and GETing JSON
+ *
+ */
+
 //--------------- Begin:  Includes ---------------------------------------------
 //                                  Core Libraries
 #include <Arduino.h>
