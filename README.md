@@ -1,13 +1,13 @@
 # JSONService
- A small utlitiy library for the ESP8266 which makes it easy to issue GET or POST requests and return a JSON response
- 
+A small utlitiy library for the ESP8266 which makes it easy to issue GET or POST requests and return a JSON response which is parsed using the [ArduinoJson](https://github.com/bblanchon/ArduinoJson) library.
+
 ## Dependencies
 
 ### Libraries
 The following third party libraries are used by this library:
 
 * [Arduino-Log](https://github.com/thijse/Arduino-Log)
-* [ArduinoJson (v6)](https://github.com/bblanchon/ArduinoJson) You must use at least version 6.15 which added filtering. 
+* [ArduinoJson](https://github.com/bblanchon/ArduinoJson) You must use at least version 6.15 which added filtering. 
 
 #### Services
 There are no dependencies on external services
