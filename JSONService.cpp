@@ -102,6 +102,7 @@ DynamicJsonDocument *JSONService::getJSON(WiFiClient *client, int jsonSize, Json
   if (error) {
     Log.warning("Unable to deserialize JSON from %s:%d", details.server.c_str(), details.port);
     Log.warning("Error = %s", error.c_str());
+    Log.warning("Requested buffer size = %d, actual buffer size = %d", jsonSize, root->capacity());
     delete root;
     return NULL;
   }
