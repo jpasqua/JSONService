@@ -6,7 +6,13 @@
 //--------------- Begin:  Includes ---------------------------------------------
 //                                  Core Libraries
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
+#if defined(ESP8266)
+  #include <ESP8266WiFi.h>
+#elif defined(ESP32)
+  #include <WiFi.h>
+#else
+  #error "Must be an ESP8266 or ESP32"
+#endif
 //                                  Third Party Libraries
 #include <ArduinoLog.h>
 #include <base64.h>
@@ -34,7 +40,7 @@ static const String RequestTypeNames[2] = {"GET", "PUT"};
 WiFiClient *JSONService::getRequest(String endpoint, RequestType type, String payload) {
   WiFiClient *client = new WiFiClient();
 
-  if (!client->connect(details.server, details.port)) {
+  if (!client->connect(details.server.c_str(), details.port)) {
     Log.warning("Connection to %s:%d failed", details.server.c_str(), details.port);
     client->stop();
     delete client;
@@ -62,13 +68,21 @@ WiFiClient *JSONService::getRequest(String endpoint, RequestType type, String pa
     return NULL;
   }
 
+  // Wait for a response
+  while (client->connected() && !client->available()) delay(1);
+
   // Check HTTP status
   char status[32] = {0};
   client->readBytesUntil('\r', status, sizeof(status));
   if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
     Log.warning("Unexpected response: %s, for %s", status, endpoint.c_str());
-    Log.warning("Connecting to %s:%d with %s:%s", details.server.c_str(), details.port, details.user.c_str(), details.pass.c_str());
-    Log.warning("%s:%s (%s)", details.apiKeyName.c_str(), details.apiKey.c_str(), _encodedAuth.c_str());
+    Log.warning("Connecting to %s:%d", details.server.c_str(), details.port);
+    if (!details.user.isEmpty())
+      Log.warning("user/pass = %s:%s", details.user.c_str(), details.pass.c_str());
+    if (!details.apiKeyName.isEmpty())
+      Log.warning("API Key Name / API KEY = %s:%s", details.apiKeyName.c_str(), details.apiKey.c_str());
+    if (!_encodedAuth.isEmpty())
+      Log.warning("Auth: %s", _encodedAuth.c_str());
 
     while (client->connected() || client->available()) {
       if (client->available()) {
@@ -119,7 +133,7 @@ DynamicJsonDocument *JSONService::getJSON(WiFiClient *client, int jsonSize, Json
 JSONService::JSONService(ServiceDetails details) : details(details) {
   if (!details.user.isEmpty()) {
     base64 b64;
-    _encodedAuth = b64.encode(details.user + ":" + details.pass, true);
+    _encodedAuth = b64.encode(details.user + ":" + details.pass);
   }
 }
 
