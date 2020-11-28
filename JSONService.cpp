@@ -6,7 +6,13 @@
 //--------------- Begin:  Includes ---------------------------------------------
 //                                  Core Libraries
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
+#if defined(ESP8266)
+  #include <ESP8266WiFi.h>
+#elif defined(ESP32)
+  #include <WiFi.h>
+#else
+  #error "Must be an ESP8266 or ESP32"
+#endif
 //                                  Third Party Libraries
 #include <ArduinoLog.h>
 #include <base64.h>
@@ -63,7 +69,7 @@ WiFiClient *JSONService::getRequest(String endpoint, RequestType type, String pa
   }
 
   // Wait for a response
-  while (client->connected() && !client->available()) delay(5);
+  while (client->connected() && !client->available()) delay(1);
 
   // Check HTTP status
   char status[32] = {0};
@@ -127,7 +133,7 @@ DynamicJsonDocument *JSONService::getJSON(WiFiClient *client, int jsonSize, Json
 JSONService::JSONService(ServiceDetails details) : details(details) {
   if (!details.user.isEmpty()) {
     base64 b64;
-    _encodedAuth = b64.encode(details.user + ":" + details.pass, true);
+    _encodedAuth = b64.encode(details.user + ":" + details.pass);
   }
 }
 
