@@ -1,5 +1,5 @@
 # JSONService
-A small utlitiy library for the ESP8266 which makes it easy to issue GET or POST requests and return a JSON response which is parsed using the [ArduinoJson](https://github.com/bblanchon/ArduinoJson) library.
+A small utlitiy library for the ESP8266 or ESP32 which makes it easy to issue GET or POST requests which return a JSON response. That response is parsed using the [ArduinoJson](https://github.com/bblanchon/ArduinoJson) library.
 
 ## Dependencies
 
@@ -42,6 +42,21 @@ In addition to the URL, you must also provide the size of the expected JSON resu
   delete root;	// It is the caller's job to delete the JSON object
 ````
 The `issuePost` function is similar, but you may also provide a JSON payload to be delivered to the server.
+
+### https Support
+
+You may issue https GET requests using this library if `SSL_SUPPORT` is defined in `JSONService.h`. It is defined by default on ESP32 and not defined by default on ESP8266 due to the more limited memory available.
+
+To use `https`, you must use port `443` in your `ServiceDetails` object. There is an additional optional `String` parameter in the `issueGet` method nameed `validation`. It is used to validate the target host. An empty `String` may be passed (which is the default). In this case, no validation of the target host is performed. If you want to validate the host, you must provide:
+
+* ESP8266:
+	* A fingerprint for the site
+	* See this note on how to find the fingerprint
+* ESP32:
+	* A CA Cert for the site (you may provide the root cert)
+	* See this note on how to find a cert
+
+Take a look at SSLExample.ino in the examples directory to see this in action.
 
 ### Filtering
 
