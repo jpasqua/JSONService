@@ -45,6 +45,6 @@ The `issuePost` function is similar, but you may also provide a JSON payload to 
 
 ### Filtering
 
-Yu may wish to use a service that returns a very large JSON result - one that is too large to manage on an ESP8266. ArduinoJson added a facility to deal with some large JSON results - filtering. Please see the [description](https://arduinojson.org/news/2020/03/22/version-6-15-0/) for details.
+You may wish to use a service that returns a very large JSON result - one that is too large to manage on an ESP8266. ArduinoJson added a facility to deal with some large JSON results - filtering. Please see the [description](https://arduinojson.org/news/2020/03/22/version-6-15-0/) for details.
 
 You can apply filtering to an `issueGet` request by providing a pointer to a filter document. This parameter is normally defaulted to `NULL`, meaning no filtering.

@@ -27,8 +27,9 @@
  *
  *----------------------------------------------------------------------------*/
 
-static const char EndOfHeaders[] = "\r\n\r\n";
-static const String RequestTypeNames[2] = {"GET", "PUT"};
+static const char     EndOfHeaders[] = "\r\n\r\n";
+static const String   RequestTypeNames[2] = {"GET", "PUT"};
+static const uint16_t SSLPort = 443;
 
 
 /*------------------------------------------------------------------------------
@@ -37,8 +38,31 @@ static const String RequestTypeNames[2] = {"GET", "PUT"};
  *
  *----------------------------------------------------------------------------*/
 
-WiFiClient *JSONService::getRequest(String endpoint, RequestType type, String payload) {
-  WiFiClient *client = new WiFiClient();
+WiFiClient *JSONService::getRequest(
+  String endpoint, RequestType type, String payload, String validation) 
+{
+  WiFiClient *client;
+
+#if defined(SSL_SUPPORT)
+  if (details.port == SSLPort) {
+    Log.verbose("JSONService::getRequest: creating SSL client");
+    WiFiClientSecure *sec = new WiFiClientSecure();
+    if (!validation.isEmpty()) {
+      #if defined(ESP8266)
+        sec->setFingerprint(validation.c_str());
+      #else // ESP32
+        sec->setCACert(validation.c_str());
+      #endif
+    }
+    client = sec;
+  } else {
+    Log.verbose("JSONService::getRequest: creating client");
+    client = new WiFiClient();
+  }
+#else // SSL_SUPPORT
+  client = new WiFiClient();
+#endif // SSL_SUPPORT
+  Log.verbose("JSONService::getRequest: client created");
 
   if (!client->connect(details.server.c_str(), details.port)) {
     Log.warning("Connection to %s:%d failed", details.server.c_str(), details.port);
@@ -137,8 +161,9 @@ JSONService::JSONService(ServiceDetails details) : details(details) {
   }
 }
 
-DynamicJsonDocument *JSONService::issueGET(String endpoint, int jsonSize, JsonDocument *filterDoc) {
-  WiFiClient *client = getRequest(endpoint, GET);
+DynamicJsonDocument *JSONService::issueGET(String endpoint, int jsonSize, JsonDocument *filterDoc, String fingerprint) {
+  WiFiClient *client = getRequest(endpoint, GET, "", fingerprint);
+
   DynamicJsonDocument *root = NULL;
   if (client) {
     root = getJSON(client, jsonSize, filterDoc);
@@ -148,7 +173,7 @@ DynamicJsonDocument *JSONService::issueGET(String endpoint, int jsonSize, JsonDo
 }
 
 DynamicJsonDocument *JSONService::issuePOST(String endpoint, int jsonSize, String payload) {
-  WiFiClient *client = getRequest(endpoint, POST, payload);
+  WiFiClient *client = getRequest(endpoint, POST, "", payload);
   DynamicJsonDocument *root = NULL;
   if (client) {
     root = getJSON(client, jsonSize, NULL);
