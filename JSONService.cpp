@@ -56,13 +56,13 @@ WiFiClient *JSONService::getRequest(
     }
     client = sec;
   } else {
-    Log.verbose("JSONService::getRequest: creating client");
+    // Log.verbose("JSONService::getRequest: creating client");
     client = new WiFiClient();
   }
 #else // SSL_SUPPORT
   client = new WiFiClient();
 #endif // SSL_SUPPORT
-  Log.verbose("JSONService::getRequest: client created");
+  // Log.verbose("JSONService::getRequest: client created");
 
   if (!client->connect(details.server.c_str(), details.port)) {
     Log.warning("Connection to %s:%d failed", details.server.c_str(), details.port);

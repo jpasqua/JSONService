@@ -102,7 +102,6 @@ void setup() {
 }
 
 void fetch() {
-Serial.println("fetch: 1");
   DynamicJsonDocument *root = service->issueGET(JobStateEndpoint, ReplyJSONSize, NULL, validation);
   if (!root) {
     Serial.println("The issueGet() call failed!");
