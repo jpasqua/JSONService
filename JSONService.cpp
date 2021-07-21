@@ -60,6 +60,7 @@ WiFiClient *JSONService::getRequest(
     client = new WiFiClient();
   }
 #else // SSL_SUPPORT
+  (void)validation; // Not used when there is no SSL support - avoid compiler warning
   client = new WiFiClient();
 #endif // SSL_SUPPORT
   // Log.verbose("JSONService::getRequest: client created");
