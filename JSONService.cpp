@@ -47,13 +47,15 @@ WiFiClient *JSONService::getRequest(
   if (details.port == SSLPort) {
     Log.verbose("JSONService::getRequest: creating SSL client");
     WiFiClientSecure *sec = new WiFiClientSecure();
-    if (!validation.isEmpty()) {
-      #if defined(ESP8266)
+    #if defined(ESP8266)
+      if (validation.isEmpty()) {
+        sec->setInsecure();
+      } else {
         sec->setFingerprint(validation.c_str());
-      #else // ESP32
-        sec->setCACert(validation.c_str());
-      #endif
-    }
+      }
+    #else   // ESP32
+      sec->setCACert(validation.c_str());
+    #endif  // ESP32
     client = sec;
   } else {
     // Log.verbose("JSONService::getRequest: creating client");

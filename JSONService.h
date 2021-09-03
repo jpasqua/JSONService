@@ -6,7 +6,8 @@
  *   are large and the requests consume considerable heap space.
  * o By default https functionality is not enabled on an ESP8266 and is enabled on an
  *   ESP32. If you'd like to enable it on an ESP8266, uncomment the definition
- *   of SSL_SUPPORT in the #ifdef below.
+ *   of SSL_SUPPORT in the #ifdef below, but it will consume a large amount of heap
+ *   space and program space.
  *
  */
 
