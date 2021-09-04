@@ -15,7 +15,7 @@ There are no dependencies on external services
 ## Usage Model
 
 ### Basic model
-The basic model is that you provide an endpoint URL to etiehr `issueGet` or `issuePOST` and you are handed back a pointer to a `DynamicJsonDocument` representing the returned JSON payload.
+The basic model is that you provide an endpoint URL to either `issueGet` or `issuePOST` and you are handed back a pointer to a `DynamicJsonDocument` representing the returned JSON payload.
 
 In addition to the URL, you must also provide the size of the expected JSON result as you would in other uses of the ArduinoJson library. It should be computed the same way. Here is an example of a use of `issueGet`:
 
@@ -50,11 +50,11 @@ You may issue https GET requests using this library if `SSL_SUPPORT` is defined 
 To use `https`, you must use port `443` in your `ServiceDetails` object. There is an additional optional `String` parameter in the `issueGet` method nameed `validation`. It is used to validate the target host. An empty `String` may be passed (which is the default). In this case, no validation of the target host is performed. If you want to validate the host, you must provide:
 
 * ESP8266:
-	* A fingerprint for the site
-	* See this note on how to find the fingerprint
+	* A fingerprint for the site. If an empty fingerprint is provided, the connection will be established, but with no validation. This effectively means you have no security guarantees.
+	* See [this note](https://arduino-esp8266.readthedocs.io/en/2.4.0/esp8266wifi/client-secure-examples.html#get-the-fingerprint) on how to find the fingerprint
 * ESP32:
-	* A CA Cert for the site (you may provide the root cert)
-	* See this note on how to find a cert
+	* A CA Cert for the site (you may provide the root cert). If you provide an empty cert, the connection will fail.
+	* You can use this [incredibly convenient site](https://projects.petrucci.ch/esp32/?page=ssl.php) to get the site certificate (or root cert) for any site of interest.
 
 Take a look at SSLExample.ino in the examples directory to see this in action.
 
