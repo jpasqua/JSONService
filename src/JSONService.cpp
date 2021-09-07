@@ -39,7 +39,7 @@ static const uint16_t SSLPort = 443;
  *----------------------------------------------------------------------------*/
 
 WiFiClient *JSONService::getRequest(
-  String endpoint, RequestType type, String payload, String validation) 
+    const String& endpoint, RequestType type, const String& payload, const char* validation) 
 {
   WiFiClient *client;
 
@@ -48,13 +48,13 @@ WiFiClient *JSONService::getRequest(
     Log.verbose("JSONService::getRequest: creating SSL client");
     WiFiClientSecure *sec = new WiFiClientSecure();
     #if defined(ESP8266)
-      if (validation.isEmpty()) {
-        sec->setInsecure();
+      if (validation && validation[0]) {
+        sec->setFingerprint(validation);
       } else {
-        sec->setFingerprint(validation.c_str());
+        sec->setInsecure();
       }
     #else   // ESP32
-      sec->setCACert(validation.c_str());
+      sec->setCACert(validation);
     #endif  // ESP32
     client = sec;
   } else {
@@ -164,8 +164,10 @@ JSONService::JSONService(ServiceDetails details) : details(details) {
   }
 }
 
-DynamicJsonDocument *JSONService::issueGET(String endpoint, int jsonSize, JsonDocument *filterDoc, String fingerprint) {
-  WiFiClient *client = getRequest(endpoint, GET, "", fingerprint);
+DynamicJsonDocument *JSONService::issueGET(
+    const String& endpoint, int jsonSize, JsonDocument *filterDoc, const char* validation)
+{
+  WiFiClient *client = getRequest(endpoint, GET, "", validation);
 
   DynamicJsonDocument *root = NULL;
   if (client) {
@@ -175,8 +177,8 @@ DynamicJsonDocument *JSONService::issueGET(String endpoint, int jsonSize, JsonDo
   return root;
 }
 
-DynamicJsonDocument *JSONService::issuePOST(String endpoint, int jsonSize, String payload) {
-  WiFiClient *client = getRequest(endpoint, POST, "", payload);
+DynamicJsonDocument *JSONService::issuePOST(const String& endpoint, int jsonSize, const String& payload) {
+  WiFiClient *client = getRequest(endpoint, POST, payload);
   DynamicJsonDocument *root = NULL;
   if (client) {
     root = getJSON(client, jsonSize, NULL);

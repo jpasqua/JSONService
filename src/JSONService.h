@@ -71,14 +71,17 @@ public:
       @return A pointer to a Json document with the return data, or NULL if an error occurred.
       and "," as the half bar.
   */
-  DynamicJsonDocument *issueGET(String endpoint, int jsonSize, JsonDocument *filterDoc = NULL, String validation="");
-  DynamicJsonDocument *issuePOST(String endpoint, int jsonSize, String payload="");
+  DynamicJsonDocument *issueGET(
+      const String& endpoint, int jsonSize, JsonDocument *filterDoc = NULL,
+      const char* validation=nullptr);
+  DynamicJsonDocument *issuePOST(const String& endpoint, int jsonSize, const String& payload="");
 
 private:
   ServiceDetails details;
   String _encodedAuth;
 
-  WiFiClient *getRequest(String endpoint, RequestType type, String payload="", String fingerptint="");
+  WiFiClient *getRequest(
+      const String& endpoint, RequestType type, const String& payload="", const char* validation = nullptr);
   DynamicJsonDocument *getJSON(WiFiClient *client, int jsonSize, JsonDocument *filterDoc);
 };
 
