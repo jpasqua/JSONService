@@ -74,14 +74,19 @@ public:
   DynamicJsonDocument *issueGET(
       const String& endpoint, int jsonSize, JsonDocument *filterDoc = NULL,
       const char* validation=nullptr);
+  DynamicJsonDocument *issueGET(
+      const char* endpoint, int jsonSize, JsonDocument *filterDoc = NULL,
+      const char* validation=nullptr);
+
   DynamicJsonDocument *issuePOST(const String& endpoint, int jsonSize, const String& payload="");
+  DynamicJsonDocument *issuePOST(const char* endpoint, int jsonSize, const String& payload="");
 
 private:
   ServiceDetails details;
   String _encodedAuth;
 
   WiFiClient *getRequest(
-      const String& endpoint, RequestType type, const String& payload="", const char* validation = nullptr);
+      const char* endpoint, RequestType type, const String& payload="", const char* validation = nullptr);
   DynamicJsonDocument *getJSON(WiFiClient *client, int jsonSize, JsonDocument *filterDoc);
 };
 

@@ -27,9 +27,9 @@
  *
  *----------------------------------------------------------------------------*/
 
-static const char     EndOfHeaders[] = "\r\n\r\n";
-static const String   RequestTypeNames[2] = {"GET", "PUT"};
-static const uint16_t SSLPort = 443;
+static constexpr const char* EndOfHeaders = "\r\n\r\n";
+static constexpr const char* RequestTypeNames[2] = {"GET", "PUT"};
+static constexpr uint16_t SSLPort = 443;
 
 
 /*------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ static const uint16_t SSLPort = 443;
  *----------------------------------------------------------------------------*/
 
 WiFiClient *JSONService::getRequest(
-    const String& endpoint, RequestType type, const String& payload, const char* validation) 
+    const char* endpoint, RequestType type, const String& payload, const char* validation) 
 {
   WiFiClient *client;
 
@@ -75,16 +75,35 @@ WiFiClient *JSONService::getRequest(
   }
 
   // Use HTTP/1.0, not 1.1 to avoid problems with chunking
-  client->println(RequestTypeNames[type] + " " + endpoint + " HTTP/1.0");
-  client->println("Host: " + details.server + ":" + String(details.port));
+  client->print(RequestTypeNames[type]);
+  client->print(" ");
+  client->print(endpoint);
+  client->println(" HTTP/1.0");
+
+  client->print("Host: ");
+  client->print(details.server);
+  client->print(":");
+  client->println(details.port);
+
   client->println("Connection: close");
-  if (!details.apiKey.isEmpty()) { client->println(details.apiKeyName + ": " + details.apiKey); }
-  if (!_encodedAuth.isEmpty()) { client->print("Authorization: "); client->println("Basic " + _encodedAuth); }
+
+  if (!details.apiKey.isEmpty()) {
+    client->print(details.apiKeyName );
+    client->print(": ");
+    client->println(details.apiKey);
+  }
+
+  if (!_encodedAuth.isEmpty()) {
+    client->print("Authorization: ");
+    client->print("Basic ");
+    client->println(_encodedAuth);
+  }
 
   client->println("User-Agent: ArduinoWiFi/1.1");
   if (type == POST && !payload.isEmpty()) {
     client->println("Content-Type: application/json ");
-    client->print("Content-Length: "); client->println(payload.length());
+    client->print("Content-Length: ");
+    client->println(payload.length());
     client->println();
     client->println(payload);
   }
@@ -102,7 +121,7 @@ WiFiClient *JSONService::getRequest(
   char status[32] = {0};
   client->readBytesUntil('\r', status, sizeof(status));
   if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
-    Log.warning("Unexpected response: %s, for %s", status, endpoint.c_str());
+    Log.warning("Unexpected response: %s, for %s", status, endpoint);
     Log.warning("Connecting to %s:%d", details.server.c_str(), details.port);
     if (!details.user.isEmpty())
       Log.warning("user/pass = %s:%s", details.user.c_str(), details.pass.c_str());
@@ -165,7 +184,7 @@ JSONService::JSONService(ServiceDetails details) : details(details) {
 }
 
 DynamicJsonDocument *JSONService::issueGET(
-    const String& endpoint, int jsonSize, JsonDocument *filterDoc, const char* validation)
+    const char* endpoint, int jsonSize, JsonDocument *filterDoc, const char* validation)
 {
   WiFiClient *client = getRequest(endpoint, GET, "", validation);
 
@@ -177,7 +196,7 @@ DynamicJsonDocument *JSONService::issueGET(
   return root;
 }
 
-DynamicJsonDocument *JSONService::issuePOST(const String& endpoint, int jsonSize, const String& payload) {
+DynamicJsonDocument *JSONService::issuePOST(const char* endpoint, int jsonSize, const String& payload) {
   WiFiClient *client = getRequest(endpoint, POST, payload);
   DynamicJsonDocument *root = NULL;
   if (client) {
@@ -187,6 +206,16 @@ DynamicJsonDocument *JSONService::issuePOST(const String& endpoint, int jsonSize
   return root;
 }
 
+
+DynamicJsonDocument *JSONService::issuePOST(const String& endpoint, int jsonSize, const String& payload) {
+  return issuePOST(endpoint.c_str(), jsonSize, payload);
+}
+
+DynamicJsonDocument *JSONService::issueGET(
+    const String& endpoint, int jsonSize, JsonDocument *filterDoc, const char* validation)
+{
+  return issueGET(endpoint.c_str(), jsonSize, filterDoc, validation);
+}
 
 
 
