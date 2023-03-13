@@ -28,7 +28,7 @@
  *----------------------------------------------------------------------------*/
 
 static constexpr const char* EndOfHeaders = "\r\n\r\n";
-static constexpr const char* RequestTypeNames[2] = {"GET", "PUT"};
+static constexpr const char* RequestTypeNames[2] = {"GET", "POST"};
 static constexpr uint16_t SSLPort = 443;
 
 
@@ -196,25 +196,29 @@ DynamicJsonDocument *JSONService::issueGET(
   return root;
 }
 
-DynamicJsonDocument *JSONService::issuePOST(const char* endpoint, int jsonSize, const String& payload) {
+DynamicJsonDocument *JSONService::issueGET(
+    const String& endpoint, int jsonSize, JsonDocument *filterDoc, const char* validation)
+{
+  return issueGET(endpoint.c_str(), jsonSize, filterDoc, validation);
+}
+
+
+DynamicJsonDocument *JSONService::issuePOST(
+    const char* endpoint, int jsonSize,
+    const String& payload, JsonDocument *filterDoc) {
   WiFiClient *client = getRequest(endpoint, POST, payload);
   DynamicJsonDocument *root = NULL;
   if (client) {
-    root = getJSON(client, jsonSize, NULL);
+    root = getJSON(client, jsonSize, filterDoc);
     delete client;
   }
   return root;
 }
 
-
-DynamicJsonDocument *JSONService::issuePOST(const String& endpoint, int jsonSize, const String& payload) {
-  return issuePOST(endpoint.c_str(), jsonSize, payload);
-}
-
-DynamicJsonDocument *JSONService::issueGET(
-    const String& endpoint, int jsonSize, JsonDocument *filterDoc, const char* validation)
-{
-  return issueGET(endpoint.c_str(), jsonSize, filterDoc, validation);
+DynamicJsonDocument *JSONService::issuePOST(
+    const String& endpoint, int jsonSize,
+    const String& payload, JsonDocument *filterDoc) {
+  return issuePOST(endpoint.c_str(), jsonSize, payload, filterDoc);
 }
 
 

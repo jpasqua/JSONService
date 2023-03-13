@@ -78,8 +78,12 @@ public:
       const char* endpoint, int jsonSize, JsonDocument *filterDoc = NULL,
       const char* validation=nullptr);
 
-  DynamicJsonDocument *issuePOST(const String& endpoint, int jsonSize, const String& payload="");
-  DynamicJsonDocument *issuePOST(const char* endpoint, int jsonSize, const String& payload="");
+  DynamicJsonDocument *issuePOST(
+      const String& endpoint, int jsonSize,
+      const String& payload="", JsonDocument *filterDoc = NULL);
+  DynamicJsonDocument *issuePOST(
+      const char* endpoint, int jsonSize,
+      const String& payload="", JsonDocument *filterDoc = NULL);
 
 private:
   ServiceDetails details;
