@@ -78,6 +78,25 @@ public:
       const char* endpoint, int jsonSize, JsonDocument *filterDoc = NULL,
       const char* validation=nullptr);
 
+  /**
+   * Some clients may want/need to do more sophisticated JSON processing
+   * than issueGET/issuePOST do out-of-the-box. For example, they may wish
+   * to do a combination of chunking and filtering. This function allows
+   * the client to initiate a request and get a WiFiClient* back. They can
+   * stream the JSON from it directly
+      @param endpoint     The endpoint to invoke
+      @param type         The type of request (GET/POST)
+      @param payload      The request payload if needed
+      @param validation   - For ESP32: A CA Certificate (perhaps a root cert)
+                          - For ESP8266: A fingerprint
+                          - Both: If the validation string is empty OR the port is not 443, 
+                          then no validation is performed
+      @return A pointer to WiFiClient from which the JSON may be read/processed.
+   */
+  WiFiClient *initiateRequest(
+      const char* endpoint, RequestType type, const String& payload="",
+      const char* validation = nullptr);
+
   DynamicJsonDocument *issuePOST(
       const String& endpoint, int jsonSize,
       const String& payload="", JsonDocument *filterDoc = NULL);
@@ -89,8 +108,6 @@ private:
   ServiceDetails details;
   String _encodedAuth;
 
-  WiFiClient *getRequest(
-      const char* endpoint, RequestType type, const String& payload="", const char* validation = nullptr);
   DynamicJsonDocument *getJSON(WiFiClient *client, int jsonSize, JsonDocument *filterDoc);
 };
 

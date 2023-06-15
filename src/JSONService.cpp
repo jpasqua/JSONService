@@ -38,7 +38,41 @@ static constexpr uint16_t SSLPort = 443;
  *
  *----------------------------------------------------------------------------*/
 
-WiFiClient *JSONService::getRequest(
+
+
+DynamicJsonDocument *JSONService::getJSON(WiFiClient *client, int jsonSize, JsonDocument *filterDoc) {
+  DeserializationError error;
+  DynamicJsonDocument *root = new DynamicJsonDocument(jsonSize);
+
+  if (filterDoc != NULL) { error = deserializeJson(*root, *client, DeserializationOption::Filter(*filterDoc)); }
+  else { error = deserializeJson(*root, *client); }
+  client->stop();
+
+  if (error) {
+    Log.warning("Unable to deserialize JSON from %s:%d", details.server.c_str(), details.port);
+    Log.warning("Error = %s", error.c_str());
+    Log.warning("Requested buffer size = %d, actual buffer size = %d", jsonSize, root->capacity());
+    delete root;
+    return NULL;
+  }
+  return root;
+}
+
+
+/*------------------------------------------------------------------------------
+ *
+ * Public functions
+ *
+ *----------------------------------------------------------------------------*/
+
+JSONService::JSONService(ServiceDetails details) : details(details) {
+  if (!details.user.isEmpty()) {
+    base64 b64;
+    _encodedAuth = b64.encode(details.user + ":" + details.pass);
+  }
+}
+
+WiFiClient *JSONService::initiateRequest(
     const char* endpoint, RequestType type, const String& payload, const char* validation) 
 {
   WiFiClient *client;
@@ -151,42 +185,10 @@ WiFiClient *JSONService::getRequest(
   return client;
 }
 
-DynamicJsonDocument *JSONService::getJSON(WiFiClient *client, int jsonSize, JsonDocument *filterDoc) {
-  DeserializationError error;
-  DynamicJsonDocument *root = new DynamicJsonDocument(jsonSize);
-
-  if (filterDoc != NULL) { error = deserializeJson(*root, *client, DeserializationOption::Filter(*filterDoc)); }
-  else { error = deserializeJson(*root, *client); }
-  client->stop();
-
-  if (error) {
-    Log.warning("Unable to deserialize JSON from %s:%d", details.server.c_str(), details.port);
-    Log.warning("Error = %s", error.c_str());
-    Log.warning("Requested buffer size = %d, actual buffer size = %d", jsonSize, root->capacity());
-    delete root;
-    return NULL;
-  }
-  return root;
-}
-
-
-/*------------------------------------------------------------------------------
- *
- * Public functions
- *
- *----------------------------------------------------------------------------*/
-
-JSONService::JSONService(ServiceDetails details) : details(details) {
-  if (!details.user.isEmpty()) {
-    base64 b64;
-    _encodedAuth = b64.encode(details.user + ":" + details.pass);
-  }
-}
-
 DynamicJsonDocument *JSONService::issueGET(
     const char* endpoint, int jsonSize, JsonDocument *filterDoc, const char* validation)
 {
-  WiFiClient *client = getRequest(endpoint, GET, "", validation);
+  WiFiClient *client = initiateRequest(endpoint, GET, "", validation);
 
   DynamicJsonDocument *root = NULL;
   if (client) {
@@ -206,7 +208,7 @@ DynamicJsonDocument *JSONService::issueGET(
 DynamicJsonDocument *JSONService::issuePOST(
     const char* endpoint, int jsonSize,
     const String& payload, JsonDocument *filterDoc) {
-  WiFiClient *client = getRequest(endpoint, POST, payload);
+  WiFiClient *client = initiateRequest(endpoint, POST, payload);
   DynamicJsonDocument *root = NULL;
   if (client) {
     root = getJSON(client, jsonSize, filterDoc);
